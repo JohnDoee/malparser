@@ -1,0 +1,4 @@
+include README.*
+include HOWTO*
+include LICENSE
+include malparser/test/testfiles/*.html
