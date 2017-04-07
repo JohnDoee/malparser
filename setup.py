@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='malparser',
-      version='0.2.8',
+      version='0.2.9',
       description='Python package to access the MyAnimeList Anime',
       long_description=open('README.rst').read(),
       author='Anders Jensen',

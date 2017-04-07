@@ -27,9 +27,9 @@ class Base(object):
         schema = tree.xpath('//div[@id="contentWrapper"]')[0]
 
         self.title = schema.xpath('.//span[@itemprop="name"]/text()')[0].strip()
-        synopsis = schema.xpath('.//span[@itemprop="description"]/text()')
+        synopsis = schema.xpath('.//span[@itemprop="description"]//text()')
         if synopsis:
-            self.synopsis = synopsis[0].strip()
+            self.synopsis = ''.join(synopsis)
         else:
             self.synopsis = ''
         self.cover = schema.xpath('.//img[@itemprop="image"]')[0]
@@ -99,7 +99,7 @@ class Base(object):
                                 'name': a.text
                             })
                 elif info_type == 'Type':
-                    save_target[info_type] = str(sorted(el.xpath('.//text()'), key=lambda x:len(x))[-1])
+                    save_target[info_type] = str(sorted(el.xpath('.//a/text()'), key=lambda x:len(x))[-1])
                 elif info_type == 'Premiered':
                     premiered = el.xpath('./a/text()')[0].split(' ')
                     if premiered:

@@ -12,7 +12,7 @@ https://github.com/JohnDoee (there is an email here)
 
 Examples
 --------
-https://github.com/JohnDoee/web-parsers/blob/master/myanimelist/README.md
+https://github.com/JohnDoee/malparser/blob/master/myanimelist/README.md
 
 License
 -------
