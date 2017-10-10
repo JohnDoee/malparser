@@ -99,7 +99,14 @@ class Base(object):
                                 'name': a.text
                             })
                 elif info_type == 'Type':
-                    save_target[info_type] = str(sorted(el.xpath('.//a/text()'), key=lambda x:len(x))[-1])
+                    types_found = sorted(el.xpath('.//a/text()'), key=lambda x:len(x))
+                    if not types_found:
+                        types_found = sorted(el.xpath('.//text()'), key=lambda x:len(x))
+
+                    if types_found:
+                        types_found = [str(x).strip() for x in types_found if str(x).strip() and str(x).strip() != 'Type:']
+                        if types_found:
+                            save_target[info_type] = str(types_found[-1])
                 elif info_type == 'Premiered':
                     premiered = el.xpath('./a/text()')[0].split(' ')
                     if premiered:
