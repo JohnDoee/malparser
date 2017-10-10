@@ -157,6 +157,7 @@ Requirements
 ------------
 
 * [lxml]
+* [requests]
 
 More stuff and contact
 ----------------------

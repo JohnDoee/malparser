@@ -22,14 +22,14 @@ class Base(object):
         # Ignoring errors here because MAL allows users to use their own encodings
         # Without testing, probably allows the users to store pictures from their latest vacation as a review
         # Anyways, anything we need is (hopefully) in utf-8
-        tree = lxml.html.fromstring(html.decode('utf-8', errors='ignore'))
+        tree = lxml.html.fromstring(html)
 
         schema = tree.xpath('//div[@id="contentWrapper"]')[0]
 
         self.title = schema.xpath('.//span[@itemprop="name"]/text()')[0].strip()
-        synopsis = schema.xpath('.//span[@itemprop="description"]/text()')
+        synopsis = schema.xpath('.//span[@itemprop="description"]//text()')
         if synopsis:
-            self.synopsis = synopsis[0].strip()
+            self.synopsis = ''.join(synopsis)
         else:
             self.synopsis = ''
         self.cover = schema.xpath('.//img[@itemprop="image"]')[0]
@@ -99,7 +99,14 @@ class Base(object):
                                 'name': a.text
                             })
                 elif info_type == 'Type':
-                    save_target[info_type] = str(sorted(el.xpath('.//text()'), key=lambda x:len(x))[-1])
+                    types_found = sorted(el.xpath('.//a/text()'), key=lambda x:len(x))
+                    if not types_found:
+                        types_found = sorted(el.xpath('.//text()'), key=lambda x:len(x))
+
+                    if types_found:
+                        types_found = [str(x).strip() for x in types_found if str(x).strip() and str(x).strip() != 'Type:']
+                        if types_found:
+                            save_target[info_type] = str(types_found[-1])
                 elif info_type == 'Premiered':
                     premiered = el.xpath('./a/text()')[0].split(' ')
                     if premiered:
@@ -116,7 +123,7 @@ class Base(object):
                 else:
                     save_target[info_type] = text.strip()
                     if splitlist:
-                        save_target[info_type] = map(lambda x:x.strip(), save_target[info_type].split(','))
+                        save_target[info_type] = [x.strip() for x in save_target[info_type].split(',')]
                     elif info_type in postprocess:
                         save_target[info_type] = postprocess[info_type](save_target[info_type])
 
@@ -140,10 +147,6 @@ class Base(object):
 
         if 'Score' in statistics:
             statistics['Score'] = num2dec(statistics['Score'])
-
-        found_h2 = False
-        tags = iter(filter(lambda x:x, map(lambda x:x.strip(': ,'), tree.xpath('//h2[starts-with(text(), "Related ")]/../text()'))))
-        current_tag = None
 
         for el in tree.xpath('//table[@class="anime_detail_related_anime"]/tr'):
             name, relationships = el.xpath('./td')
