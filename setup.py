@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='malparser',
-      version='0.2.9',
+      version='1.0.0',
       description='Python package to access the MyAnimeList Anime',
       long_description=open('README.rst').read(),
       author='Anders Jensen',
@@ -11,9 +11,9 @@ setup(name='malparser',
       author_email='johndoee+malparser@tidalstream.org',
       url='https://github.com/JohnDoee/malparser',
       packages=['malparser'],
-      install_requires=['lxml'],
+      install_requires=['requests', 'lxml'],
       classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',

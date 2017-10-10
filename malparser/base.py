@@ -22,7 +22,7 @@ class Base(object):
         # Ignoring errors here because MAL allows users to use their own encodings
         # Without testing, probably allows the users to store pictures from their latest vacation as a review
         # Anyways, anything we need is (hopefully) in utf-8
-        tree = lxml.html.fromstring(html.decode('utf-8', errors='ignore'))
+        tree = lxml.html.fromstring(html)
 
         schema = tree.xpath('//div[@id="contentWrapper"]')[0]
 
@@ -123,7 +123,7 @@ class Base(object):
                 else:
                     save_target[info_type] = text.strip()
                     if splitlist:
-                        save_target[info_type] = map(lambda x:x.strip(), save_target[info_type].split(','))
+                        save_target[info_type] = [x.strip() for x in save_target[info_type].split(',')]
                     elif info_type in postprocess:
                         save_target[info_type] = postprocess[info_type](save_target[info_type])
 
@@ -147,10 +147,6 @@ class Base(object):
 
         if 'Score' in statistics:
             statistics['Score'] = num2dec(statistics['Score'])
-
-        found_h2 = False
-        tags = iter(filter(lambda x:x, map(lambda x:x.strip(': ,'), tree.xpath('//h2[starts-with(text(), "Related ")]/../text()'))))
-        current_tag = None
 
         for el in tree.xpath('//table[@class="anime_detail_related_anime"]/tr'):
             name, relationships = el.xpath('./td')
