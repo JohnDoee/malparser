@@ -1,7 +1,7 @@
 from .base import Base
 
 
-class Manga(Base): # not implemented yet
+class Manga(Base):  # not implemented yet
     base_url = 'http://myanimelist.net/manga/%s/'
 
     def __repr__(self):

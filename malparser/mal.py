@@ -2,12 +2,14 @@ import requests
 
 from .anime import Anime
 from .manga import Manga
+from .searchresult import SearchResult
 
 HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en",
     "User-Agent": "Scrapy/0.24.2 (+http://scrapy.org)",
 }
+
 
 class MAL(object):
     def _fetch(self, obj):
@@ -25,3 +27,6 @@ class MAL(object):
 
     def get_manga(self, mal_id):
         return Manga(mal_id, self)
+
+    def search_anime(self, query):
+        return SearchResult('anime', query, self)

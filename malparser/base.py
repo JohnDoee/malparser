@@ -1,11 +1,23 @@
 import decimal
 import re
 
+from datetime import datetime
+
 import lxml.html
 
 
 class Base(object):
     fetched = False
+
+    def reset(self):
+        self.title = None
+        self.synopsis = None
+        self.cover = None
+        self.info = {}
+        self.alternative_titles = {}
+        self.related = {}
+        self.statistics = {}
+        self.reviews = []
 
     def __init__(self, mal_id, mal):
         self.mal_id = mal_id
@@ -22,6 +34,7 @@ class Base(object):
         # Ignoring errors here because MAL allows users to use their own encodings
         # Without testing, probably allows the users to store pictures from their latest vacation as a review
         # Anyways, anything we need is (hopefully) in utf-8
+        self.reset()
         tree = lxml.html.fromstring(html)
 
         schema = tree.xpath('//div[@id="contentWrapper"]')[0]
@@ -30,19 +43,12 @@ class Base(object):
         synopsis = schema.xpath('.//span[@itemprop="description"]//text()')
         if synopsis:
             self.synopsis = ''.join(synopsis)
-        else:
-            self.synopsis = ''
+
         self.cover = schema.xpath('.//img[@itemprop="image"]')[0]
         if 'data-src' in self.cover.attrib:
             self.cover = self.cover.attrib['data-src']
         else:
             self.cover = self.cover.attrib['src']
-
-        self.info = info = {}
-        self.alternative_titles = alternative_titles = {}
-        self.statistics = statistics = {}
-        self.related = related = {}
-        self.reviews = []
 
         def duration2int(x):
             runtime = 0
@@ -74,12 +80,13 @@ class Base(object):
             except decimal.InvalidOperation:
                 return None
 
-        strip2int = lambda x: x != 'N/A' and int(x.strip('#')) or None
+        def strip2int(x):
+            return x != 'N/A' and int(x.strip('#')) or None
 
         loop_elements = [
-            ('Alternative Titles', True, [], alternative_titles, {}),
-            ('Information', False, ['Producers', 'Genres', 'Authors', 'Serialization', 'Licensors', 'Studios'], info, {'Episodes': num2int, 'Duration': duration2int, 'Volumes': num2int, 'Chapters': num2int}),
-            ('Statistics', False, [], statistics, {'Favorites': num2int, 'Members': num2int, 'Popularity': strip2int, 'Ranked': strip2int}),
+            ('Alternative Titles', True, [], self.alternative_titles, {}),
+            ('Information', False, ['Producers', 'Genres', 'Authors', 'Serialization', 'Licensors', 'Studios'], self.info, {'Episodes': num2int, 'Duration': duration2int, 'Volumes': num2int, 'Chapters': num2int}),
+            ('Statistics', False, [], self.statistics, {'Favorites': num2int, 'Members': num2int, 'Popularity': strip2int, 'Ranked': strip2int}),
         ]
 
         for block, splitlist, linklist, save_target, postprocess in loop_elements:
@@ -99,9 +106,9 @@ class Base(object):
                                 'name': a.text
                             })
                 elif info_type == 'Type':
-                    types_found = sorted(el.xpath('.//a/text()'), key=lambda x:len(x))
+                    types_found = sorted(el.xpath('.//a/text()'), key=lambda x: len(x))
                     if not types_found:
-                        types_found = sorted(el.xpath('.//text()'), key=lambda x:len(x))
+                        types_found = sorted(el.xpath('.//text()'), key=lambda x: len(x))
 
                     if types_found:
                         types_found = [str(x).strip() for x in types_found if str(x).strip() and str(x).strip() != 'Type:']
@@ -127,36 +134,35 @@ class Base(object):
                     elif info_type in postprocess:
                         save_target[info_type] = postprocess[info_type](save_target[info_type])
 
-
         score_box = tree.xpath('//div[./span[text()="Score:"]]/span')
 
         votes = tree.xpath('//span[@itemprop="ratingCount"]/text()')
         if votes:
-            statistics['Votes'] = votes[0]
+            self.statistics['Votes'] = votes[0]
         else:
-            statistics['Votes'] = score_box[2].xpath('./text()')[0]
+            self.statistics['Votes'] = score_box[2].xpath('./text()')[0]
 
-        if 'Votes' in statistics:
-            statistics['Votes'] = int(statistics['Votes'].replace(',', ''))
+        if 'Votes' in self.statistics:
+            self.statistics['Votes'] = int(self.statistics['Votes'].replace(',', ''))
 
         score = tree.xpath('//span[@itemprop="ratingValue"]/text()')
         if score:
-            statistics['Score'] = score[0]
+            self.statistics['Score'] = score[0]
         else:
-            statistics['Score'] = score_box[1].xpath('./text()')[0]
+            self.statistics['Score'] = score_box[1].xpath('./text()')[0]
 
-        if 'Score' in statistics:
-            statistics['Score'] = num2dec(statistics['Score'])
+        if 'Score' in self.statistics:
+            self.statistics['Score'] = num2dec(self.statistics['Score'])
 
         for el in tree.xpath('//table[@class="anime_detail_related_anime"]/tr'):
             name, relationships = el.xpath('./td')
             name = name.text.strip(':')
-            related[name] = []
+            self.related[name] = []
             for r in relationships.xpath('./a'):
                 url = r.attrib['href'].split('/')
                 tag_type = url[1]
                 tag_id = url[2]
-                related[name].append({'type': tag_type, 'id': int(tag_id)})
+                self.related[name].append({'type': tag_type, 'id': int(tag_id)})
 
         self.mal._handle_related(self)
 
@@ -171,3 +177,43 @@ class Base(object):
             })
 
         self.fetched = True
+
+    def convert_aired_dates(self, text):
+        aired_start, aired_end, season = None, None, None
+        if text != 'Not yet aired':
+            if ' to ' in text:
+                aired_start, aired_end = text.split(' to ')
+            else:
+                aired_start = aired_end = text
+
+            aired_start = self.parse_date(aired_start)
+            aired_end = self.parse_date(aired_end)
+
+            if aired_start:
+                season = self.get_season(aired_start)
+
+        return aired_start, aired_end, season
+
+    def parse_date(self, d):
+        if '?' in d:
+            return None
+
+        d = d.strip()
+        if d != 'Not available':
+            spaces = len(d.split(' '))
+            if spaces == 1:
+                return datetime.strptime(d, '%Y').date()
+            elif spaces == 2:
+                return datetime.strptime(d, '%b, %Y').date()
+            else:
+                return datetime.strptime(d, '%b  %d, %Y').date()
+
+    def get_season(self, d):
+        if d.month in [2, 3, 4]:
+            return ('Spring', d.year)
+        elif d.month in [5, 6, 7]:
+            return ('Summer', d.year)
+        elif d.month in [8, 9, 10]:
+            return ('Fall', d.year)
+        else:
+            return ('Winter', d.year)
