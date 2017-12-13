@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='malparser',
-      version='1.0.0',
+      version='1.1.0',
       description='Python package to access the MyAnimeList Anime',
       long_description=open('README.rst').read(),
       author='Anders Jensen',

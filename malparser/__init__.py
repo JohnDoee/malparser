@@ -1,1 +1,1 @@
-from malparser.mal import MAL
+from malparser.mal import MAL  # noqa
