@@ -44,11 +44,14 @@ class Base(object):
         if synopsis:
             self.synopsis = ''.join(synopsis)
 
-        self.cover = schema.xpath('.//img[@itemprop="image"]')[0]
-        if 'data-src' in self.cover.attrib:
-            self.cover = self.cover.attrib['data-src']
+        cover = schema.xpath('.//img[@itemprop="image"]')[0]
+        if 'data-src' in cover.attrib:
+            cover = cover.attrib['data-src']
         else:
-            self.cover = self.cover.attrib['src']
+            cover = cover.attrib['src']
+
+        cover = cover.rsplit('.', 1)
+        self.cover = '%sl.%s' % tuple(cover)
 
         def duration2int(x):
             runtime = 0

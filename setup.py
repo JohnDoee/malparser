@@ -2,8 +2,9 @@
 
 from setuptools import setup
 
+
 setup(name='malparser',
-      version='1.1.0',
+      version='1.1.1',
       description='Python package to access the MyAnimeList Anime',
       long_description=open('README.rst').read(),
       author='Anders Jensen',
@@ -22,4 +23,3 @@ setup(name='malparser',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ]
 )
-
