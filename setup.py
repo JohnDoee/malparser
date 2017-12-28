@@ -2,6 +2,7 @@
 
 from setuptools import setup
 
+
 setup(name='malparser',
       version='1.1.0',
       description='Python package to access the MyAnimeList Anime',
@@ -22,4 +23,3 @@ setup(name='malparser',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ]
 )
-
