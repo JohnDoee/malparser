@@ -15,6 +15,7 @@ class MAL(object):
     def _fetch(self, obj):
         data = requests.get(obj._get_url(), headers=HEADERS).text
         obj.parse(data)
+        obj.fetched = True
 
     def _handle_related(self, obj):
         related = {'manga': Manga, 'anime': Anime}
