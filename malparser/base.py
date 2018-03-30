@@ -204,6 +204,10 @@ class Base(object):
         d = d.strip()
         if d != 'Not available':
             spaces = len(d.split(' '))
+            if spaces == 2 and len(d.split(',')[0]) <= 2:
+                d = d.split(' ')[1]
+                spaces = 1
+
             if spaces == 1:
                 return datetime.strptime(d, '%Y').date()
             elif spaces == 2:
