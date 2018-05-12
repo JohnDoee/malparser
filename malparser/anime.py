@@ -2,7 +2,7 @@ from .base import Base
 
 
 class Anime(Base):
-    base_url = 'http://myanimelist.net/anime/%s/'
+    base_url = 'https://myanimelist.net/anime/%s/'
 
     def reset(self):
         super(Anime, self).reset()
