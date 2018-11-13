@@ -11,9 +11,22 @@ HEADERS = {
 }
 
 
+class FailedToFetchException(Exception):
+    pass
+
+
 class MAL(object):
     def _fetch(self, obj):
-        data = requests.get(obj._get_url(), headers=HEADERS).text
+        for i in range(2, 4):
+            r = requests.get(obj._get_url(), headers=HEADERS)
+            if r.status_code != 200:
+                time.sleep(i)
+            else:
+                break
+        else:
+            raise FailedToFetchException('Tried 3 times and was unable to fetch page')
+
+        data = r.text
         obj.parse(data)
         obj.fetched = True
 
