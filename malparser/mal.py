@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 from .anime import Anime
@@ -24,17 +26,17 @@ class MAL(object):
             else:
                 break
         else:
-            raise FailedToFetchException('Tried 3 times and was unable to fetch page')
+            raise FailedToFetchException("Tried 3 times and was unable to fetch page")
 
         data = r.text
         obj.parse(data)
         obj.fetched = True
 
     def _handle_related(self, obj):
-        related = {'manga': Manga, 'anime': Anime}
+        related = {"manga": Manga, "anime": Anime}
 
         for key, values in obj.related.items():
-            obj.related[key] = [related[v['type']](v['id'], self) for v in values]
+            obj.related[key] = [related[v["type"]](v["id"], self) for v in values]
 
     def get_anime(self, mal_id):
         return Anime(mal_id, self)
@@ -43,4 +45,4 @@ class MAL(object):
         return Manga(mal_id, self)
 
     def search_anime(self, query):
-        return SearchResult('anime', query, self)
+        return SearchResult("anime", query, self)
