@@ -21,7 +21,9 @@ class MAL(object):
     def _fetch(self, obj):
         for i in range(2, 4):
             r = requests.get(obj._get_url(), headers=HEADERS)
-            if r.status_code != 200:
+            if r.status_code == 404:
+                raise FailedToFetchException("ID does not exist on mal")
+            elif r.status_code != 200:
                 time.sleep(i)
             else:
                 break
