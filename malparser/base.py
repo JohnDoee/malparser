@@ -41,16 +41,23 @@ class Base(object):
         self.title = schema.xpath('.//span[@itemprop="name"]/text()')[0].strip()
         synopsis = schema.xpath('.//span[@itemprop="description"]//text()')
         if synopsis:
-            self.synopsis = "".join(synopsis)
+            self.synopsis = "".join(synopsis).strip()
 
-        cover = schema.xpath('.//img[@itemprop="image"]')[0]
-        if "data-src" in cover.attrib:
-            cover = cover.attrib["data-src"]
+        cover = schema.xpath('.//img[@itemprop="image"]')
+        if cover:
+            cover = cover[0]
+            if "data-src" in cover.attrib:
+                cover = cover.attrib["data-src"]
+            elif "src" in cover.attrib:
+                cover = cover.attrib["src"]
+            else:
+                cover = None
+
+        if cover:
+            cover = cover.rsplit(".", 1)
+            self.cover = "%sl.%s" % tuple(cover)
         else:
-            cover = cover.attrib["src"]
-
-        cover = cover.rsplit(".", 1)
-        self.cover = "%sl.%s" % tuple(cover)
+            self.cover = None
 
         def duration2int(x):
             runtime = 0
@@ -158,8 +165,9 @@ class Base(object):
                         if types_found:
                             save_target[info_type] = str(types_found[-1])
                 elif info_type == "Premiered":
-                    premiered = el.xpath("./a/text()")[0].split(" ")
+                    premiered = el.xpath("./a/text()")
                     if premiered:
+                        premiered = premiered[0].split(" ")
                         year = premiered[1]
                         try:
                             year = int(premiered[1])
@@ -237,31 +245,31 @@ class Base(object):
             else:
                 aired_start = aired_end = text
 
-            aired_start = self.parse_date(aired_start)
-            aired_end = self.parse_date(aired_end)
+            aired_start, known_month = self.parse_date(aired_start)
+            aired_end, known_month = self.parse_date(aired_end)
 
-            if aired_start:
+            if aired_start and known_month:
                 season = self.get_season(aired_start)
 
         return aired_start, aired_end, season
 
     def parse_date(self, d):
-        if "?" in d:
-            return None
+        if "?" not in d:
+            d = d.strip()
+            if d != "Not available":
+                spaces = len(d.split(" "))
+                if spaces == 2 and len(d.split(",")[0]) <= 2:
+                    d = d.split(" ")[1]
+                    spaces = 1
 
-        d = d.strip()
-        if d != "Not available":
-            spaces = len(d.split(" "))
-            if spaces == 2 and len(d.split(",")[0]) <= 2:
-                d = d.split(" ")[1]
-                spaces = 1
+                if spaces == 1:
+                    return datetime.strptime(d, "%Y").date(), False
+                elif spaces == 2:
+                    return datetime.strptime(d, "%b, %Y").date(), True
+                else:
+                    return datetime.strptime(d, "%b  %d, %Y").date(), True
 
-            if spaces == 1:
-                return datetime.strptime(d, "%Y").date()
-            elif spaces == 2:
-                return datetime.strptime(d, "%b, %Y").date()
-            else:
-                return datetime.strptime(d, "%b  %d, %Y").date()
+        return None, False
 
     def get_season(self, d):
         if d.month in [2, 3, 4]:
