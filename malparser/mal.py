@@ -19,16 +19,11 @@ class FailedToFetchException(Exception):
 
 class MAL(object):
     def _fetch(self, obj):
-        for i in range(2, 4):
-            r = requests.get(obj._get_url(), headers=HEADERS)
-            if r.status_code == 404:
-                raise FailedToFetchException("ID does not exist on mal")
-            elif r.status_code != 200:
-                time.sleep(i)
-            else:
-                break
-        else:
-            raise FailedToFetchException("Tried 3 times and was unable to fetch page")
+        r = requests.get(obj._get_url(), headers=HEADERS)
+        if r.status_code == 404:
+            raise FailedToFetchException("ID does not exist on mal")
+        elif r.status_code != 200:
+            raise FailedToFetchException("Problem with website, potential ratelimit")
 
         data = r.text
         obj.parse(data)
