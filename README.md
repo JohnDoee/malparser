@@ -159,17 +159,16 @@ Requirements
 * [lxml]
 * [requests]
 
-More stuff and contact
-----------------------
-See http://github.com/JohnDoee for anything you might need
 
-Versioning
-----------
-Follows: [Semantic Versioning]
+Special note
+------------
+
+MAL has a ratelimit in place so keep a delay between requests.
+My recommendation is 3 seconds to avoid problems.
 
 License
 --------
-See LICENSE
+MIT, See LICENSE
 
 [lxml]: http://lxml.de/
 [MyAnimeList]: http://myanimelist.net

@@ -194,11 +194,13 @@ class Base(object):
         votes = tree.xpath('//span[@itemprop="ratingCount"]/text()')
         if votes:
             self.statistics["Votes"] = votes[0]
-        else:
+        elif len(score_box) >= 3:
             self.statistics["Votes"] = score_box[2].xpath("./text()")[0]
 
         if "Votes" in self.statistics:
             self.statistics["Votes"] = int(self.statistics["Votes"].replace(",", ""))
+        else:
+            self.statistics["Votes"] = None
 
         score = tree.xpath('//span[@itemprop="ratingValue"]/text()')
         if score:
@@ -217,6 +219,8 @@ class Base(object):
                 url = r.attrib["href"].split("/")
                 tag_type = url[1]
                 tag_id = url[2]
+                if not tag_id or not tag_type:
+                    continue
                 self.related[name].append({"type": tag_type, "id": int(tag_id)})
 
         self.mal._handle_related(self)
