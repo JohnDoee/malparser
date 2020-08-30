@@ -38,8 +38,8 @@ class Base(object):
 
         schema = tree.xpath('//div[@id="contentWrapper"]')[0]
 
-        self.title = schema.xpath('.//span[@itemprop="name"]/text()')[0].strip()
-        synopsis = schema.xpath('.//span[@itemprop="description"]//text()')
+        self.title = schema.xpath('.//div[@class="h1-title"]//div[@itemprop="name"]/h1/text()')[0].strip()
+        synopsis = schema.xpath('.//p[@itemprop="description"]//text()')
         if synopsis:
             self.synopsis = "".join(synopsis).strip()
 
