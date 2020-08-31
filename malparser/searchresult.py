@@ -18,7 +18,10 @@ class SearchResult(Base):
         self.mal = mal
 
     def _get_url(self):
-        return self.base_url % (self.search_type, self.mal_id,)
+        return self.base_url % (
+            self.search_type,
+            self.mal_id,
+        )
 
     def parse(self, html):
         self.results = []

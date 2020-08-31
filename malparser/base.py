@@ -38,8 +38,10 @@ class Base(object):
 
         schema = tree.xpath('//div[@id="contentWrapper"]')[0]
 
-        self.title = schema.xpath('.//span[@itemprop="name"]/text()')[0].strip()
-        synopsis = schema.xpath('.//span[@itemprop="description"]//text()')
+        self.title = schema.xpath(
+            './/div[@class="h1-title"]//div[@itemprop="name"]/h1/text()'
+        )[0].strip()
+        synopsis = schema.xpath('.//p[@itemprop="description"]//text()')
         if synopsis:
             self.synopsis = "".join(synopsis).strip()
 
@@ -226,14 +228,22 @@ class Base(object):
         self.mal._handle_related(self)
 
         for review in tree.xpath(
-            '//h2[contains(text(), "Reviews")]/following-sibling::*//div[contains(@class, "borderLight")]'
+            '//h2[contains(text(), "Reviews")]/../following-sibling::div[contains(@class, "borderDark")]'
         ):
             rating = int(
-                review.xpath('.//a[text()="Overall Rating"]/../text()')[0].strip(": ")
+                " ".join(review.xpath('.//a[text()="Overall Rating"]/../text()')).strip(
+                    ": \n"
+                )
             )
             review = (
-                "".join(review.xpath("following-sibling::div/text()")).strip()
-                + "\n".join(review.xpath("following-sibling::div/span/text()")).strip()
+                "".join(
+                    review.xpath('./div[contains(@class, "textReadability")]/text()')
+                ).strip()
+                + "\n".join(
+                    review.xpath(
+                        './div[contains(@class, "textReadability")]/span/text()'
+                    )
+                ).strip()
             )
             review = review.replace("\n\n", "\n")
 
