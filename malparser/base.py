@@ -102,6 +102,9 @@ class Base(object):
                 [
                     "Producers",
                     "Genres",
+                    "Genre",
+                    "Themes",
+                    "Theme",
                     "Authors",
                     "Serialization",
                     "Licensors",
@@ -190,6 +193,12 @@ class Base(object):
                         save_target[info_type] = postprocess[info_type](
                             save_target[info_type]
                         )
+
+            if 'Genre' in save_target:
+                save_target["Genres"] = save_target.pop("Genre")
+
+            if 'Theme' in save_target:
+                save_target["Themes"] = save_target.pop("Theme")
 
         score_box = tree.xpath('//div[./span[text()="Score:"]]/span')
 
