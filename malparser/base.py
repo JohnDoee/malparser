@@ -288,7 +288,10 @@ class Base(object):
                 if spaces == 1:
                     return datetime.strptime(d, "%Y").date(), False
                 elif spaces == 2:
-                    return datetime.strptime(d, "%b, %Y").date(), True
+                    if ',' in d:
+                        return datetime.strptime(d, "%b, %Y").date(), True
+                    else:
+                        return datetime.strptime(d, "%b %Y").date(), True
                 else:
                     return datetime.strptime(d, "%b  %d, %Y").date(), True
 
