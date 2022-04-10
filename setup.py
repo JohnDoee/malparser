@@ -4,7 +4,7 @@ from setuptools import setup
 
 
 setup(name='malparser',
-      version='1.1.11',
+      version='1.1.12',
       description='Python package to access the MyAnimeList Anime',
       long_description=open('README.rst').read(),
       author='Anders Jensen',
